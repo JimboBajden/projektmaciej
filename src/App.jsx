@@ -57,6 +57,10 @@ function App() {
     console.log(nowy)
     setPrzepisy([...przepisy, nowy]);
     setNextId(nextId + 1); // Update nextId after adding a new recipe
+    setTytul('')
+    setKroki('')
+    setSkladniki([])
+    setCzas('') 
   }
   function usun(id){
     let tmp = [];
