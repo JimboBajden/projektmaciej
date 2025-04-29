@@ -3,7 +3,7 @@ import './App.css';
 
 function Przepis({tytul , skladniki , kroki , czas , children}) { 
   return (
-    <div>
+    <div className='karta'>
       <h2>{tytul}</h2><span>{czas}</span>
       <p>Składniki:</p>
       <ul>
@@ -81,6 +81,7 @@ function App() {
     if (!skladniki.includes(selectedSkladnik)) {
       // Add the ingredient if it's not already in the list
       setSkladniki([...skladniki, selectedSkladnik]);
+      SetEdytowany({ ...edytowany, skladniki: [...skladniki, selectedSkladnik] });
     } else {
       alert('Ten składnik już istnieje!');
     }
@@ -104,7 +105,7 @@ function App() {
     let nowy
     for(let i=0;i<przepisy.length;i++){
       if(edytowany.id == przepisy[i].id){
-        nowy = { id: edytowany.id, tytul, skladniki , kroki , czas};
+        nowy = { id: edytowany.id, tytul: edytowany.tytul, skladniki: edytowany.skladniki , kroki: edytowany.kroki , czas: edytowany.czas};
         tab.push(nowy)
       }else{
         tab.push(przepisy[i])
@@ -113,6 +114,8 @@ function App() {
     console.log(tab)
     setPrzepisy(tab)
     SetEdytowany(null)
+    setSkladniki([])
+
 }
 function polub(id) {
   let tab = [];
