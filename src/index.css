@@ -1,3 +1,7 @@
+.caly{
+  width: 100%;
+  height: 100%;
+}
 .header {
   position: relative;
   height: 60px; /* enough space for both elements */

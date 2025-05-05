@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 
-function Przepis({tytul , skladniki , kroki , czas , children}) { 
+function Przepis({tytul , skladniki , kroki , czas , children,operation}) { 
   return (
     <div className='karta'>
+      <button onClick={operation}>
+        <img  src="/search.svg" alt="Sort Icon" style={{ width: '25px', height: '25px' }} />
+      </button>
       <div className='header'>
         <h2 className='tytul'>{tytul}</h2>
         <p className='czas'>{czas + " min"}</p>
@@ -201,6 +204,25 @@ const [czyUlubione, ustawUlubione] = useState(false);
 function removeSkladnikDodawanie(ktory){
     setSkladniki(skladniki.filter(skladnik => skladnik !== ktory))
 }
+const [wybranyElement, setElement] = useState(null);
+  if(wybranyElement){
+    return(
+      <div className='caly'>
+      <Przepis 
+        
+        przepisy={przepisy} 
+        id={wybranyElement.id} key={wybranyElement.id} 
+        tytul={wybranyElement.tytul} 
+        skladniki={wybranyElement.skladniki} 
+        kroki={wybranyElement.kroki} 
+        czas={wybranyElement.czas} >
+        <button onClick={()=>{usun(wybranyElement.id)}}><img src="/trash3-fill.svg" alt="Sort Icon" style={{ width: '25px', height: '25px' }} ></img> </button>
+        <button onClick={()=>{edytuj(wybranyElement.id)}}><img src="/pen.svg" alt="Sort Icon" style={{ width: '25px', height: '25px' }} ></img></button>
+        <Star state={wybranyElement.ulubione} operation={()=>{polub(wybranyElement.id)}} ></Star>
+        </Przepis>
+      </div>
+    )
+  }
   if(czyUlubione && !edytowany){
     return(
       <div>
@@ -283,6 +305,7 @@ function removeSkladnikDodawanie(ktory){
       [...tablica()].sort((a, b) => sort ? Number(a.czas) - Number(b.czas) : 0)
       .map((p) => (
         <Przepis 
+        operation={()=>{setElement(p)}}
         przepisy={przepisy} 
         id={p.id} key={p.id} 
         tytul={p.tytul} 
