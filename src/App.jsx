@@ -4,13 +4,16 @@ import './App.css';
 function Przepis({tytul , skladniki , kroki , czas , children}) { 
   return (
     <div className='karta'>
-      <h2>{tytul}</h2><span>{czas}</span>
-      <p>Składniki:</p>
-      <ul>
+      <div className='header'>
+        <h2 className='tytul'>{tytul}</h2>
+        <p className='czas'>{czas + " min"}</p>
+      </div>
+      <h3>Składniki:</h3>
+      <div>
         {skladniki.map((skladnik, index) => (
-          <li key={index}>{skladnik}</li>
+          <p key={index}>-{skladnik}</p>
         ))}
-      </ul>
+      </div>
       <p>{kroki}</p>
       <div>
         {children}
@@ -18,6 +21,39 @@ function Przepis({tytul , skladniki , kroki , czas , children}) {
     </div>
   );
 }
+
+function Sort({state , operation}){
+  if(!state){
+    return(
+      <button onClick={operation}>
+      <img  src="/sort-down.svg" alt="Sort Icon" style={{ width: '25px', height: '25px' }} />
+      </button>
+    )
+  }else{
+    return(
+      <button onClick={operation}>
+      <img  src="/x-circle.svg" alt="Sort Icon" style={{ width: '25px', height: '25px' }}></img>
+      </button>
+    )
+  }
+}
+function Star({state , operation}){
+  if(state){
+    return(
+      <button onClick={operation}>
+        <img  src="/star-fill.svg" alt="Sort Icon" style={{ width: '25px', height: '25px' }} />
+      </button>
+      
+    )
+  }else{
+    return(
+      <button onClick={operation}>
+        <img src="/star.svg" alt="Sort Icon" style={{ width: '25px', height: '25px' }}></img>
+      </button>
+    )
+  }
+}
+
 const dostepneSkladniki = ["pomidor","pomarańcza","woda w proszku"]
 function App() {
   const [tytul, setTytul] = useState('');
@@ -53,14 +89,28 @@ function App() {
   }
 
   function dane() {
-    const nowy = { id: nextId, tytul, skladniki , kroki , czas , ulubione:false};
-    console.log(nowy)
-    setPrzepisy([...przepisy, nowy]);
-    setNextId(nextId + 1); // Update nextId after adding a new recipe
-    setTytul('')
-    setKroki('')
-    setSkladniki([])
-    setCzas('') 
+    if (tytul && tytul.trim() !== "") {
+      if (Array.isArray(skladniki) && skladniki.length > 0) {
+        if (kroki && kroki.trim() !== "") {  // Fixed this to use kroki, not title.kroki()
+          if (!isNaN(czas) && czas >= 0) {
+            const nowy = { 
+              id: nextId, 
+              tytul: tytul,    // Assuming you meant to use title here
+              skladniki, 
+              kroki, 
+              czas, 
+              ulubione: false 
+            };
+            setPrzepisy([...przepisy, nowy]);
+            setNextId(nextId + 1); // Update nextId after adding a new recipe
+            setTytul('');
+            setKroki('');
+            setSkladniki([]);
+            setCzas('');
+          }
+        }
+      }
+    }
   }
   function usun(id){
     let tmp = [];
@@ -100,27 +150,32 @@ function App() {
   }
   
   function edycjaDanych(){
-    let tytul = edytowany.tytul;
-    let skladniki = edytowany.skladniki;
-    let kroki = edytowany.kroki;
-    let czas = edytowany.czas;
 
-    let tab=[];
-    let nowy
-    for(let i=0;i<przepisy.length;i++){
-      if(edytowany.id == przepisy[i].id){
-        nowy = { id: edytowany.id, tytul: edytowany.tytul, skladniki: edytowany.skladniki , kroki: edytowany.kroki , czas: edytowany.czas};
-        tab.push(nowy)
-      }else{
-        tab.push(przepisy[i])
+    if (edytowany.tytul && edytowany.tytul.trim() !== "") {
+      if (Array.isArray(edytowany.skladniki) && edytowany.skladniki.length > 0) {
+        if (edytowany.kroki && edytowany.kroki.trim() !== "") {  // Fixed this to use kroki, not title.kroki()
+          if (!isNaN(edytowany.czas) && edytowany.czas >= 0) {
+            let tab=[];
+            let nowy
+            for(let i=0;i<przepisy.length;i++){
+              if(edytowany.id == przepisy[i].id){
+                nowy = { id: edytowany.id, tytul: edytowany.tytul, skladniki: edytowany.skladniki , kroki: edytowany.kroki , czas: edytowany.czas , ulubione: edytowany.ulubione};
+                tab.push(nowy)
+              }else{
+                tab.push(przepisy[i])
+              }
+            }
+            console.log(tab)
+            setPrzepisy(tab)
+            SetEdytowany(null)
+            setSkladniki([])
+          }
+        }
       }
     }
-    console.log(tab)
-    setPrzepisy(tab)
-    SetEdytowany(null)
-    setSkladniki([])
+  }
 
-}
+
 function polub(id) {
   let tab = [];
   for (let i = 0; i < przepisy.length; i++) {
@@ -143,10 +198,13 @@ function tablica(){
 }
 const [selectedSkladnik, setSelectedSkladnik] = useState(dostepneSkladniki[0]);
 const [czyUlubione, ustawUlubione] = useState(false);
-  if(czyUlubione){
+function removeSkladnikDodawanie(ktory){
+    setSkladniki(skladniki.filter(skladnik => skladnik !== ktory))
+}
+  if(czyUlubione && !edytowany){
     return(
       <div>
-        <button onClick={()=>{ustawUlubione(false)}}>wszystkie</button>
+        <Star state={czyUlubione} operation={()=>{ustawUlubione(false)}}></Star>
         <h1>ulubione przepisy</h1>
         {
         przepisy.filter(p => p.ulubione).map((p) => (
@@ -157,13 +215,9 @@ const [czyUlubione, ustawUlubione] = useState(false);
             kroki={p.kroki}
             czas={p.czas}
           >
-      <button onClick={() => {usun(p.id)}}>usuń</button>
-      <button onClick={() => {edytuj(p.id)}}>edytuj</button>
-      <input 
-        type='checkbox' 
-        onChange={() => { polub(p.id); }} 
-        checked={p.ulubione} 
-      />
+      <button onClick={() => {usun(p.id)}}><img src="/trash3-fill.svg" alt="Sort Icon" style={{ width: '25px', height: '25px' }} ></img></button>
+      <button onClick={() => {edytuj(p.id)}}><img src="/pen.svg" alt="Sort Icon" style={{ width: '25px', height: '25px' }} ></img></button>
+      <Star state={p.ulubione} operation={()=>{polub(p.id)}} ></Star>
     </Przepis>
   ))
 }
@@ -173,7 +227,7 @@ const [czyUlubione, ustawUlubione] = useState(false);
   if(!edytowany){
   return (
     <div>
-      <button onClick={()=>{ustawUlubione(true)}}>ulubione</button>
+       <Star state={czyUlubione} operation={()=>{ustawUlubione(true)}}></Star>
       <select onChange={(e) => setSzukane(e.target.value)}>
         <option value={null}></option>
         {dostepneSkladniki.map((skladnik) => (
@@ -182,9 +236,9 @@ const [czyUlubione, ustawUlubione] = useState(false);
             </option>
           ))}
       </select>
-      <button onClick={() => SetSort(!sort)}>sortuj po czasie</button>
+      <Sort operation={() => SetSort(!sort)} state={sort}></Sort>
       <h1>Przepisowanie</h1>
-<div>
+<div className='dodawanie'>
   <input
     value={tytul}
     onChange={(e) => setTytul(e.target.value)}
@@ -207,7 +261,7 @@ const [czyUlubione, ustawUlubione] = useState(false);
   </button>
   <ul>
     {skladniki.map((s, i) => (
-      <li key={i}>{s}</li>
+      <li key={i}>{s}<button onClick={()=>{removeSkladnikDodawanie(s)}}><img src="/trash3-fill.svg" alt="Sort Icon" style={{ width: '25px', height: '25px' }} ></img></button></li>
     ))}
   </ul>
 
@@ -235,12 +289,9 @@ const [czyUlubione, ustawUlubione] = useState(false);
         skladniki={p.skladniki} 
         kroki={p.kroki} 
         czas={p.czas} >
-        <button onClick={()=>{usun(p.id)}}>usun</button>
-        <button onClick={()=>{edytuj(p.id)}}>edytuj</button>
-        <input  type='checkbox'  onChange={() =>
-        { polub(p.id); }} 
-        checked={p.ulubione} 
-        />
+        <button onClick={()=>{usun(p.id)}}><img src="/trash3-fill.svg" alt="Sort Icon" style={{ width: '25px', height: '25px' }} ></img> </button>
+        <button onClick={()=>{edytuj(p.id)}}><img src="/pen.svg" alt="Sort Icon" style={{ width: '25px', height: '25px' }} ></img></button>
+        <Star state={p.ulubione} operation={()=>{polub(p.id)}} ></Star>
         </Przepis>
       ))}
     </div>
@@ -273,7 +324,7 @@ const [czyUlubione, ustawUlubione] = useState(false);
       {edytowany.skladniki.map((s, i) => (
         <li key={i}>
           {s} 
-          <button onClick={() => removeSkladnik(s)}>Usuń</button>
+          <button onClick={() => removeSkladnik(s)}><img src="/trash3-fill.svg" alt="Sort Icon" style={{ width: '25px', height: '25px' }} ></img></button>
         </li>
       ))}
     </ul>
