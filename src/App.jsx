@@ -209,7 +209,6 @@ const [wybranyElement, setElement] = useState(null);
     return(
       <div className='caly'>
       <Przepis 
-        
         przepisy={przepisy} 
         id={wybranyElement.id} key={wybranyElement.id} 
         tytul={wybranyElement.tytul} 
