@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 
-function Przepis({tytul , skladniki , kroki , czas , children,operation}) { 
+function Przepis({tytul , skladniki , kroki , czas , children,operation , obrazek}) { 
   return (
     <div className='karta'>
+      {obrazek && <img style={{ width: '100px', height: '100px' }}  src={obrazek} alt="Preview" />}
       <button onClick={operation}>
         <img  src="/search.svg" alt="Sort Icon" style={{ width: '25px', height: '25px' }} />
       </button>
@@ -98,10 +99,11 @@ function App() {
           if (!isNaN(czas) && czas >= 0) {
             const nowy = { 
               id: nextId, 
-              tytul: tytul,    // Assuming you meant to use title here
+              tytul: tytul,    
               skladniki, 
               kroki, 
               czas, 
+              obrazek:obraz,
               ulubione: false 
             };
             setPrzepisy([...przepisy, nowy]);
@@ -110,6 +112,7 @@ function App() {
             setKroki('');
             setSkladniki([]);
             setCzas('');
+            setImg();
           }
         }
       }
@@ -162,7 +165,7 @@ function App() {
             let nowy
             for(let i=0;i<przepisy.length;i++){
               if(edytowany.id == przepisy[i].id){
-                nowy = { id: edytowany.id, tytul: edytowany.tytul, skladniki: edytowany.skladniki , kroki: edytowany.kroki , czas: edytowany.czas , ulubione: edytowany.ulubione};
+                nowy = {obrazek:edytowany.obrazek, id: edytowany.id, tytul: edytowany.tytul, skladniki: edytowany.skladniki , kroki: edytowany.kroki , czas: edytowany.czas , ulubione: edytowany.ulubione};
                 tab.push(nowy)
               }else{
                 tab.push(przepisy[i])
@@ -204,19 +207,35 @@ const [czyUlubione, ustawUlubione] = useState(false);
 function removeSkladnikDodawanie(ktory){
     setSkladniki(skladniki.filter(skladnik => skladnik !== ktory))
 }
+function handleImageChange(e){
+  let file = e.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    return;
+  }
+  const reader = new FileReader();
+
+  reader.onloadend = () => {
+    console.log('Base64 string:', reader.result); // Optional: debug
+    setImg(reader.result); // Set Base64 string to state
+  };
+
+  reader.readAsDataURL(file);
+}
+const [obraz,setImg] = useState()
 const [wybranyElement, setElement] = useState(null);
   if(wybranyElement){
     return(
       <div className='caly'>
+        <button onClick={(e)=>{e.target.style.display = 'none'; window.print() ;e.target.style.display = 'inline'}}>drukuj/pdf</button>
       <Przepis 
+      operation={()=>{setElement(null)}}
         przepisy={przepisy} 
         id={wybranyElement.id} key={wybranyElement.id} 
         tytul={wybranyElement.tytul} 
         skladniki={wybranyElement.skladniki} 
         kroki={wybranyElement.kroki} 
         czas={wybranyElement.czas} >
-        <button onClick={()=>{usun(wybranyElement.id)}}><img src="/trash3-fill.svg" alt="Sort Icon" style={{ width: '25px', height: '25px' }} ></img> </button>
-        <button onClick={()=>{edytuj(wybranyElement.id)}}><img src="/pen.svg" alt="Sort Icon" style={{ width: '25px', height: '25px' }} ></img></button>
         <Star state={wybranyElement.ulubione} operation={()=>{polub(wybranyElement.id)}} ></Star>
         </Przepis>
       </div>
@@ -230,6 +249,7 @@ const [wybranyElement, setElement] = useState(null);
         {
         przepisy.filter(p => p.ulubione).map((p) => (
           <Przepis 
+            obrazek={p.obrazek}
             key={p.id}
             tytul={p.tytul}
             skladniki={p.skladniki}
@@ -280,6 +300,7 @@ const [wybranyElement, setElement] = useState(null);
   <button onClick={addSkladnik}>
     dodaj składnik
   </button>
+  <button onClick={()=>{setTytul('');setSkladniki([]);setCzas(),setKroki(),setImg()}}>reset</button>
   <ul>
     {skladniki.map((s, i) => (
       <li key={i}>{s}<button onClick={()=>{removeSkladnikDodawanie(s)}}><img src="/trash3-fill.svg" alt="Sort Icon" style={{ width: '25px', height: '25px' }} ></img></button></li>
@@ -296,7 +317,17 @@ const [wybranyElement, setElement] = useState(null);
     onChange={(e) => setCzas(e.target.value)}
     placeholder="czas"
   />
-
+  <input
+        type="file"
+        accept="image/*"
+        onChange={(e)=>handleImageChange(e)}
+        className="mb-4"
+      />
+  <img
+      src={obraz}
+      alt="Uploaded preview"
+      style={{ width: '50px', height: '50px' }}
+    />
   <button onClick={dane}>Utwórz przepis</button>
 </div>
 
@@ -304,6 +335,7 @@ const [wybranyElement, setElement] = useState(null);
       [...tablica()].sort((a, b) => sort ? Number(a.czas) - Number(b.czas) : 0)
       .map((p) => (
         <Przepis 
+        obrazek={p.obrazek}
         operation={()=>{setElement(p)}}
         przepisy={przepisy} 
         id={p.id} key={p.id} 
