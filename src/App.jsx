@@ -227,7 +227,8 @@ const [wybranyElement, setElement] = useState(null);
   if(wybranyElement){
     return(
       <div className='caly'>
-        <button onClick={(e)=>{e.target.style.display = 'none'; window.print() ;e.target.style.display = 'inline'}}>drukuj/pdf</button>
+        <button onClick={(e)=>{e.target.style.display = 'none'; window.print() ;e.target.style.display = 'inline'}}><img  src="/printer.svg" alt="Sort Icon" style={{ width: '25px', height: '25px' }} /></button>
+        
       <Przepis 
       operation={()=>{setElement(null)}}
         przepisy={przepisy} 
@@ -325,7 +326,7 @@ const [wybranyElement, setElement] = useState(null);
       />
   <img
       src={obraz}
-      alt="Uploaded preview"
+      alt=" "
       style={{ width: '50px', height: '50px' }}
     />
   <button onClick={dane}>Utwórz przepis</button>
