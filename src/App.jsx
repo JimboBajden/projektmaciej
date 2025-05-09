@@ -250,6 +250,7 @@ const [wybranyElement, setElement] = useState(null);
         {
         przepisy.filter(p => p.ulubione).map((p) => (
           <Przepis 
+            operation={()=>{setElement(p)}}
             obrazek={p.obrazek}
             key={p.id}
             tytul={p.tytul}
